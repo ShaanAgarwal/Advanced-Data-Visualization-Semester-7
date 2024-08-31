@@ -1,0 +1,11 @@
+1. Box Plot - The box plot shows the distribution of cholesterol levels by age and gender. Most cholesterol levels range between 200 and 300. After age 60, females tend to have higher cholesterol levels compared to males.
+
+2. Violin Plot - The violin plot depicts cholesterol levels by chest pain type and gender. For all chest pain types except asymptomatic pain, females have higher cholesterol levels than males.
+
+3. Scatter Plot - The scatter plot displays the relationship between age and cholesterol by gender. The data is densely scattered between ages 40 and 60 for both males and females, with more variation before and after that age range. In some cases, females have higher cholesterol levels compared to males.
+
+4. Regression Plot - The regression plot illustrates the relationship between age and cholesterol. The data is well-distributed across the age range, and the regression line runs through the center of the scatter plot.
+
+5. Pie Chart - The pie chart shows the distribution of chest pain types. There are four categories: 'Typical Angina,' 'Non-Anginal Pain,' 'Atypical Angina,' and 'Asymptomatic.' 'Typical Angina' represents the largest percentage, at 48.5%, nearly half of the total, while 'Asymptomatic' accounts for the smallest percentage, at 7.51%.
+
+6. Treemap - The treemap illustrates cholesterol levels by chest pain type and gender. In all cases, males have higher cholesterol levels than females.

@@ -1,0 +1,2 @@
+docker build --no-cache -t my_dash_app .
+docker run -p 8080:8080 -v ${PWD}:/app my_dash_app
