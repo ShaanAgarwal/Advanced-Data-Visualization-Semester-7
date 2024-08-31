@@ -1,0 +1,2 @@
+docker build -t crime-data-charts .
+docker run --rm -v ${PWD}:/app crime-data-charts

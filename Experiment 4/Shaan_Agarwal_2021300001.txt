@@ -1,0 +1,13 @@
+Certainly! Here’s a revised version with improved grammar:
+
+1. Bar Chart: The bar chart displays the number of complaints versus the number of complaints received by each state. The states with the highest number of complaints registered are Andaman & Nicobar Islands, Jharkhand, Madhya Pradesh, and Uttar Pradesh.
+
+2. Pie Chart: The pie chart illustrates the distribution of complaints declared false by state. Madhya Pradesh has the highest number of false declarations, followed by Uttar Pradesh, Maharashtra, Punjab, and Kerala.
+
+3. Histogram: The histogram represents the distribution of the number of cases reported. It exhibits a right-skewed distribution.
+
+4. Timeline Chart: The timeline chart shows the number of cases registered over the years in Andhra Pradesh. There was a significant increase in cases in 2005, followed by a decline until 2010.
+
+5. Scatter Plot: The scatter plot depicts the relationship between cases registered and complaints received across various states. Most of the data points are concentrated in the bottom-left corner, indicating that complaints received are mostly between 0 and 5000.
+
+6. Bubble Plot: The bubble plot compares complaints received with complaints declared false. Most states have cases within the range of 0 to 5000.
