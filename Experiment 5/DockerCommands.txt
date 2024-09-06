@@ -1,0 +1,2 @@
+docker build -t mumbai_house_pricing .
+docker run --rm -v ${PWD}:/app mumbai_house_pricing

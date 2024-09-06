@@ -1,0 +1,13 @@
+1. Box and Whisker Plot of Price by Number of Bedrooms - We can see clearly from the figure that the max value increases by increase in the number of bedrooms gradually but at a certain point, we see that after 5, the price drops gradually for 6 and 7 rooms. In most of the situations, the price increases, by increase in rooms, which is a very common observation in any dataset and also in reality.
+
+2. Violin Plot of Price by Number of Bedrooms - This visualization uses the same data as the previous plot. Over here also, we can infer that the price increases gradually with increase in bedrooms.
+
+3. Linear Regression of Price V/S Area - We see most of the clustered being formed at the bottom left, and very few dots in the rest of the chart. We can that there is a very sharp line present little lower than 45 degrees.
+
+4. Nonlinear Regression of Price V/S Area - This chart gives a better curve as compared to the previous plot. We see a complete curve starting from the bottom, on going to the top, since we have some scattered dots on the top as well.
+
+5. Jitter Plot of Price By Location - There were many locations in this dataset, but the locations showing the most spread are being labeled on the x-axis. Most of the places in Mumbai are having almost the same price, but some places like Vrindavan Society, Khargar, and some other areas are having more price then the others.
+
+6. Word Chart - Over here, we are seeing the places being shown the most in the dataset. This also means, that there might be more flats in these areas. We see Thane West, Khargar, Mira Road West being present most inside the dataset, meaning that these places have been the most preferred for the collection of data.
+
+7. 3D Scatter Plot of Area V/S Price V/S Number of Bedrooms. We had already done some visualization on Price V/S Number of Bedrooms in our previous visualization. Over here in the 3D chart, we have added the element of Area as well. So over here, we can see that we have a vertical scatter of dots here. Most of the flats being taken into the study are below 4000.
