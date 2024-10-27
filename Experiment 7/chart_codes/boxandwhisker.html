@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Box and Whisker Plot</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .box {
+      fill: steelblue;
+      opacity: 0.7;
+    }
+    .median {
+      stroke: orange;
+      stroke-width: 2;
+    }
+    .whisker {
+      stroke: #aaa;
+      stroke-width: 2;
+    }
+    .axis line,
+    .axis path {
+      stroke: #ddd;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+  <!-- Chart Title -->
+  <h2 class="title" style="text-align: center;">Box and Whisker Plot: Charges Distribution by Smoker Status</h2>
+
+  <!-- Chart Container -->
+  <div id="chart" style="display: flex; justify-content: center;"></div>
+  
+  <script>
+    const margin = { top: 20, right: 30, bottom: 50, left: 50 },
+          width = 500 - margin.left - margin.right,
+          height = 400 - margin.top - margin.bottom;
+
+    const svg = d3.select("#chart")
+                  .append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Load CSV data
+    d3.csv("insurance.csv").then(data => {
+      // Parse charges as numbers
+      data.forEach(d => d.charges = +d.charges);
+
+      // Group data by smoker status
+      const groupedData = d3.group(data, d => d.smoker);
+      
+      // Calculate boxplot statistics for each group
+      const boxData = Array.from(groupedData, ([key, values]) => {
+        const charges = values.map(d => d.charges);
+        return {
+          smoker: key,
+          q1: d3.quantile(charges, 0.25),
+          median: d3.quantile(charges, 0.5),
+          q3: d3.quantile(charges, 0.75),
+          min: d3.min(charges),
+          max: d3.max(charges)
+        };
+      });
+
+      // Set up scales
+      const x = d3.scaleBand()
+                  .domain(boxData.map(d => d.smoker))
+                  .range([0, width])
+                  .padding(0.3);
+
+      const y = d3.scaleLinear()
+                  .domain([0, d3.max(boxData, d => d.max)])
+                  .range([height, 0])
+                  .nice();
+
+      // Add x-axis
+      svg.append("g")
+         .attr("class", "x axis")
+         .attr("transform", `translate(0,${height})`)
+         .call(d3.axisBottom(x));
+
+      // Add y-axis
+      svg.append("g")
+         .attr("class", "y axis")
+         .call(d3.axisLeft(y));
+
+      // Add boxes
+      svg.selectAll(".box")
+         .data(boxData)
+         .enter()
+         .append("rect")
+         .attr("class", "box")
+         .attr("x", d => x(d.smoker))
+         .attr("y", d => y(d.q3))
+         .attr("width", x.bandwidth())
+         .attr("height", d => y(d.q1) - y(d.q3));
+
+      // Add median lines
+      svg.selectAll(".median")
+         .data(boxData)
+         .enter()
+         .append("line")
+         .attr("class", "median")
+         .attr("x1", d => x(d.smoker))
+         .attr("x2", d => x(d.smoker) + x.bandwidth())
+         .attr("y1", d => y(d.median))
+         .attr("y2", d => y(d.median));
+
+      // Add whiskers
+      svg.selectAll(".whisker")
+         .data(boxData)
+         .enter()
+         .append("line")
+         .attr("class", "whisker")
+         .attr("x1", d => x(d.smoker) + x.bandwidth() / 2)
+         .attr("x2", d => x(d.smoker) + x.bandwidth() / 2)
+         .attr("y1", d => y(d.min))
+         .attr("y2", d => y(d.q1));
+      
+      svg.selectAll(".whisker")
+         .data(boxData)
+         .enter()
+         .append("line")
+         .attr("class", "whisker")
+         .attr("x1", d => x(d.smoker) + x.bandwidth() / 2)
+         .attr("x2", d => x(d.smoker) + x.bandwidth() / 2)
+         .attr("y1", d => y(d.q3))
+         .attr("y2", d => y(d.max));
+    });
+  </script>
+</body>
+</html>

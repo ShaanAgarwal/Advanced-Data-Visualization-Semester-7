@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smokers vs. Non-Smokers Pie Chart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .arc path {
+      stroke: #fff;
+    }
+    .label {
+      font-size: 14px;
+      fill: #333;
+      text-anchor: middle;
+    }
+    .percentage {
+      font-size: 12px;
+      fill: #555;
+      text-anchor: middle;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      text-anchor: middle;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Chart Title -->
+  <h2 class="title" style="text-align: center;">Proportion of Smokers vs. Non-Smokers</h2>
+
+  <!-- Chart Container -->
+  <div id="chart" style="display: flex; justify-content: center;"></div>
+  
+  <script>
+    const width = 400,
+          height = 400,
+          radius = Math.min(width, height) / 2;
+
+    const svg = d3.select("#chart")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height)
+                  .append("g")
+                  .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+    // Define color scale
+    const color = d3.scaleOrdinal()
+                    .domain(["yes", "no"])
+                    .range(["#ff7f0e", "#1f77b4"]);
+
+    // Load CSV data
+    d3.csv("insurance.csv").then(data => {
+      // Count the number of smokers and non-smokers
+      const smokerCounts = d3.rollups(
+        data,
+        v => v.length,
+        d => d.smoker
+      ).map(([key, value]) => ({ smoker: key, count: value }));
+
+      const total = d3.sum(smokerCounts, d => d.count); // Calculate total count
+
+      // Set up pie layout
+      const pie = d3.pie()
+                    .value(d => d.count);
+
+      // Define arc generator
+      const arc = d3.arc()
+                    .outerRadius(radius - 10)
+                    .innerRadius(0);
+
+      // Define label position
+      const labelArc = d3.arc()
+                         .outerRadius(radius - 60)
+                         .innerRadius(radius - 60);
+
+      // Bind data to pie chart
+      const arcs = svg.selectAll(".arc")
+                      .data(pie(smokerCounts))
+                      .enter()
+                      .append("g")
+                      .attr("class", "arc");
+
+      // Draw pie slices
+      arcs.append("path")
+          .attr("d", arc)
+          .attr("fill", d => color(d.data.smoker));
+
+      // Add labels with count and percentage
+      arcs.append("text")
+          .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+          .attr("class", "label")
+          .text(d => `${d.data.smoker === 'yes' ? 'Smokers' : 'Non-Smokers'}`);
+
+      // Add percentage inside each slice
+      arcs.append("text")
+          .attr("transform", d => `translate(${arc.centroid(d)})`)
+          .attr("class", "percentage")
+          .attr("dy", "0.35em")
+          .text(d => `${((d.data.count / total) * 100).toFixed(1)}%`);
+    });
+  </script>
+</body>
+</html>

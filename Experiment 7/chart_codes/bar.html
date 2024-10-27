@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Bar Chart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .bar {
+      fill: steelblue;
+    }
+    .axis line,
+    .axis path {
+      stroke: #ddd;
+    }
+    .label {
+      font-size: 12px;
+      fill: #333;
+    }
+    .title {
+      font-size: 16px;
+      font-weight: bold;
+      text-anchor: middle;
+    }
+    .axis-label {
+      font-size: 12px;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+  <script>
+    const margin = { top: 40, right: 30, bottom: 60, left: 60 },
+          width = 500 - margin.left - margin.right,
+          height = 300 - margin.top - margin.bottom;
+
+    const svg = d3.select("#chart")
+                  .append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Add chart title
+    svg.append("text")
+       .attr("class", "title")
+       .attr("x", width / 2)
+       .attr("y", -margin.top / 2)
+       .text("Average Charges by Region");
+
+    // Load the CSV data
+    d3.csv("insurance.csv").then(data => {
+      // Parse charges as numbers
+      data.forEach(d => d.charges = +d.charges);
+
+      // Group data by region and calculate the average charges
+      const avgChargesByRegion = Array.from(
+        d3.group(data, d => d.region),
+        ([key, values]) => ({ region: key, avgCharges: d3.mean(values, d => d.charges) })
+      );
+
+      // Set up scales
+      const x = d3.scaleBand()
+                  .domain(avgChargesByRegion.map(d => d.region))
+                  .range([0, width])
+                  .padding(0.2);
+
+      const y = d3.scaleLinear()
+                  .domain([0, d3.max(avgChargesByRegion, d => d.avgCharges)])
+                  .nice()
+                  .range([height, 0]);
+
+      // Add x-axis
+      svg.append("g")
+         .attr("class", "x axis")
+         .attr("transform", `translate(0,${height})`)
+         .call(d3.axisBottom(x));
+
+      // Add x-axis label
+      svg.append("text")
+         .attr("class", "axis-label")
+         .attr("x", width / 2)
+         .attr("y", height + margin.bottom - 15)
+         .text("Region");
+
+      // Add y-axis
+      svg.append("g")
+         .attr("class", "y axis")
+         .call(d3.axisLeft(y));
+
+      // Add y-axis label
+      svg.append("text")
+         .attr("class", "axis-label")
+         .attr("transform", "rotate(-90)")
+         .attr("x", -height / 2)
+         .attr("y", -margin.left + 15)
+         .text("Average Charges");
+
+      // Draw bars
+      svg.selectAll(".bar")
+         .data(avgChargesByRegion)
+         .enter()
+         .append("rect")
+         .attr("class", "bar")
+         .attr("x", d => x(d.region))
+         .attr("y", d => y(d.avgCharges))
+         .attr("width", x.bandwidth())
+         .attr("height", d => height - y(d.avgCharges));
+
+      // Add labels
+      svg.selectAll(".label")
+         .data(avgChargesByRegion)
+         .enter()
+         .append("text")
+         .attr("class", "label")
+         .attr("x", d => x(d.region) + x.bandwidth() / 2)
+         .attr("y", d => y(d.avgCharges) - 5)
+         .attr("text-anchor", "middle")
+         .text(d => d.avgCharges.toFixed(2));
+    });
+  </script>
+</body>
+</html>
