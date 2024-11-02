@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Cover Type Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f6f8;
+            margin: 0;
+        }
+
+        #dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            width: 90%;
+            height: 90vh;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .chart-container {
+            padding: 10px;
+            background-color: #e9edf1;
+            border-radius: 8px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .metric-box {
+            grid-column: span 3;
+            display: flex;
+            justify-content: space-around;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric {
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="dashboard">
+        <!-- Numeric Metrics -->
+        <div class="metric-box">
+            <div class="metric" id="total-count">Total Samples: </div>
+            <div class="metric" id="average-elevation">Avg. Elevation: </div>
+            <div class="metric" id="dominant-cover-type">Dominant Cover Type: </div>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="chart-container">
+            <div class="chart-title">Cover Type Distribution (Bar Chart)</div>
+            <div id="bar-chart"></div>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="chart-container">
+            <div class="chart-title">Cover Type Proportion (Pie Chart)</div>
+            <div id="pie-chart"></div>
+        </div>
+
+        <!-- Histogram -->
+        <div class="chart-container">
+            <div class="chart-title">Elevation Distribution (Histogram)</div>
+            <div id="histogram"></div>
+        </div>
+
+        <!-- Scatter Plot -->
+        <div class="chart-container">
+            <div class="chart-title">Elevation vs Aspect (Scatter Plot)</div>
+            <div id="scatter-plot"></div>
+        </div>
+
+        <!-- Box Plot -->
+        <div class="chart-container">
+            <div class="chart-title">Vertical Distance by Cover Type (Box Plot)</div>
+            <div id="box-plot"></div>
+        </div>
+
+        <!-- Timeline Chart -->
+        <div class="chart-container">
+            <div class="chart-title">Horizontal Distance to Roadways (Timeline)</div>
+            <div id="timeline-chart"></div>
+        </div>
+    </div>
+
+    <!-- Load D3.js library -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Load data and populate dashboard
+        d3.csv("covtype.csv").then(function (data) {
+            // Parse the data columns as needed
+            data.forEach(d => {
+                d.Elevation = +d.Elevation;
+                d.Aspect = +d.Aspect;
+                d.Vertical_Distance_To_Hydrology = +d.Vertical_Distance_To_Hydrology;
+                d.Horizontal_Distance_To_Roadways = +d.Horizontal_Distance_To_Roadways;
+                d.Cover_Type = +d.Cover_Type;
+            });
+
+            // Calculate metrics for the dashboard
+            const totalSamples = data.length;
+            const avgElevation = d3.mean(data, d => d.Elevation).toFixed(2);
+            const coverTypeCounts = d3.rollup(data, v => v.length, d => d.Cover_Type);
+            const dominantCoverType = Array.from(coverTypeCounts).sort((a, b) => b[1] - a[1])[0][0];
+
+            document.getElementById("total-count").textContent += totalSamples;
+            document.getElementById("average-elevation").textContent += avgElevation;
+            document.getElementById("dominant-cover-type").textContent += dominantCoverType;
+
+            // 1. Bar Chart - Cover Type Distribution
+            const barWidth = 250, barHeight = 150;
+            const barSvg = d3.select("#bar-chart")
+                .append("svg")
+                .attr("width", barWidth)
+                .attr("height", barHeight);
+            const xScaleBar = d3.scaleBand()
+                .domain(Array.from(coverTypeCounts.keys()))
+                .range([0, barWidth])
+                .padding(0.1);
+            const yScaleBar = d3.scaleLinear()
+                .domain([0, d3.max(coverTypeCounts.values())])
+                .range([barHeight, 0]);
+            barSvg.selectAll("rect")
+                .data(Array.from(coverTypeCounts.entries()))
+                .enter()
+                .append("rect")
+                .attr("x", d => xScaleBar(d[0]))
+                .attr("y", d => yScaleBar(d[1]))
+                .attr("width", xScaleBar.bandwidth())
+                .attr("height", d => barHeight - yScaleBar(d[1]))
+                .attr("fill", "#69b3a2");
+
+            // 2. Pie Chart - Cover Type Proportion
+            const pieWidth = 200, pieHeight = 200;
+            const pieSvg = d3.select("#pie-chart")
+                .append("svg")
+                .attr("width", pieWidth)
+                .attr("height", pieHeight)
+                .append("g")
+                .attr("transform", `translate(${pieWidth / 2},${pieHeight / 2})`);
+            const pie = d3.pie().value(d => d[1]);
+            const pieArc = d3.arc()
+                .innerRadius(0)
+                .outerRadius(Math.min(pieWidth, pieHeight) / 2 - 10);
+            pieSvg.selectAll("path")
+                .data(pie(Array.from(coverTypeCounts.entries())))
+                .enter()
+                .append("path")
+                .attr("d", pieArc)
+                .attr("fill", d => d3.schemeCategory10[d.index]);
+
+            // 3. Histogram - Elevation Distribution
+            const histWidth = 250, histHeight = 150;
+            const histSvg = d3.select("#histogram")
+                .append("svg")
+                .attr("width", histWidth)
+                .attr("height", histHeight);
+            const xScaleHist = d3.scaleLinear()
+                .domain([d3.min(data, d => d.Elevation), d3.max(data, d => d.Elevation)])
+                .range([0, histWidth]);
+            const histogram = d3.histogram()
+                .domain(xScaleHist.domain())
+                .thresholds(xScaleHist.ticks(10));
+            const bins = histogram(data.map(d => d.Elevation));
+            const yScaleHist = d3.scaleLinear()
+                .domain([0, d3.max(bins, d => d.length)])
+                .range([histHeight, 0]);
+            histSvg.selectAll("rect")
+                .data(bins)
+                .enter()
+                .append("rect")
+                .attr("x", d => xScaleHist(d.x0))
+                .attr("y", d => yScaleHist(d.length))
+                .attr("width", d => xScaleHist(d.x1) - xScaleHist(d.x0) - 1)
+                .attr("height", d => histHeight - yScaleHist(d.length))
+                .attr("fill", "#69b3a2");
+
+            // 4. Scatter Plot - Elevation vs Aspect
+            const scatterWidth = 250, scatterHeight = 150;
+            const scatterSvg = d3.select("#scatter-plot")
+                .append("svg")
+                .attr("width", scatterWidth)
+                .attr("height", scatterHeight);
+            const xScaleScatter = d3.scaleLinear()
+                .domain([d3.min(data, d => d.Elevation), d3.max(data, d => d.Elevation)])
+                .range([0, scatterWidth]);
+            const yScaleScatter = d3.scaleLinear()
+                .domain([d3.min(data, d => d.Aspect), d3.max(data, d => d.Aspect)])
+                .range([scatterHeight, 0]);
+            scatterSvg.selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("cx", d => xScaleScatter(d.Elevation))
+                .attr("cy", d => yScaleScatter(d.Aspect))
+                .attr("r", 3)
+                .attr("fill", "steelblue");
+
+            // Box Plot - Vertical Distance by Cover Type
+            const boxWidth = 250, boxHeight = 150, margin = { top: 10, right: 30, bottom: 30, left: 40 };
+            const boxSvg = d3.select("#box-plot")
+                .append("svg")
+                .attr("width", boxWidth + margin.left + margin.right)
+                .attr("height", boxHeight + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Group data by Cover_Type and calculate quartiles
+            const groupedData = d3.group(data, d => d.Cover_Type);
+            const boxData = Array.from(groupedData, ([key, values]) => {
+                const sorted = values.map(d => d.Vertical_Distance_To_Hydrology).sort(d3.ascending);
+                const q1 = d3.quantile(sorted, 0.25);
+                const median = d3.quantile(sorted, 0.5);
+                const q3 = d3.quantile(sorted, 0.75);
+                const iqr = q3 - q1;
+                const min = Math.max(d3.min(sorted), q1 - 1.5 * iqr);
+                const max = Math.min(d3.max(sorted), q3 + 1.5 * iqr);
+
+                return { Cover_Type: key, q1, median, q3, iqr, min, max, values: sorted };
+            });
+
+            // Scales for x-axis (Cover_Type) and y-axis (Vertical_Distance)
+            const xScaleBox = d3.scaleBand()
+                .domain(boxData.map(d => d.Cover_Type))
+                .range([0, boxWidth])
+                .padding(0.2);
+
+            const yScaleBox = d3.scaleLinear()
+                .domain([d3.min(boxData, d => d.min), d3.max(boxData, d => d.max)])
+                .nice()
+                .range([boxHeight, 0]);
+
+            // Add x-axis
+            boxSvg.append("g")
+                .attr("transform", `translate(0, ${boxHeight})`)
+                .call(d3.axisBottom(xScaleBox))
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end");
+
+            // Add y-axis
+            boxSvg.append("g").call(d3.axisLeft(yScaleBox));
+
+            // Draw box plot elements for each Cover_Type
+            boxData.forEach(d => {
+                // Draw main box
+                boxSvg.append("rect")
+                    .attr("x", xScaleBox(d.Cover_Type))
+                    .attr("y", yScaleBox(d.q3))
+                    .attr("height", yScaleBox(d.q1) - yScaleBox(d.q3))
+                    .attr("width", xScaleBox.bandwidth())
+                    .attr("fill", "#69b3a2");
+
+                // Draw median line
+                boxSvg.append("line")
+                    .attr("x1", xScaleBox(d.Cover_Type))
+                    .attr("x2", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth())
+                    .attr("y1", yScaleBox(d.median))
+                    .attr("y2", yScaleBox(d.median))
+                    .attr("stroke", "black");
+
+                // Draw whiskers
+                boxSvg.append("line")  // Top whisker
+                    .attr("x1", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth() / 2)
+                    .attr("x2", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth() / 2)
+                    .attr("y1", yScaleBox(d.max))
+                    .attr("y2", yScaleBox(d.q3))
+                    .attr("stroke", "black");
+
+                boxSvg.append("line")  // Bottom whisker
+                    .attr("x1", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth() / 2)
+                    .attr("x2", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth() / 2)
+                    .attr("y1", yScaleBox(d.min))
+                    .attr("y2", yScaleBox(d.q1))
+                    .attr("stroke", "black");
+
+                // Draw min and max lines
+                boxSvg.append("line")
+                    .attr("x1", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth() / 4)
+                    .attr("x2", xScaleBox(d.Cover_Type) + 3 * xScaleBox.bandwidth() / 4)
+                    .attr("y1", yScaleBox(d.min))
+                    .attr("y2", yScaleBox(d.min))
+                    .attr("stroke", "black");
+
+                boxSvg.append("line")
+                    .attr("x1", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth() / 4)
+                    .attr("x2", xScaleBox(d.Cover_Type) + 3 * xScaleBox.bandwidth() / 4)
+                    .attr("y1", yScaleBox(d.max))
+                    .attr("y2", yScaleBox(d.max))
+                    .attr("stroke", "black");
+
+                // Draw outliers
+                d.values.forEach(value => {
+                    if (value < d.min || value > d.max) {
+                        boxSvg.append("circle")
+                            .attr("cx", xScaleBox(d.Cover_Type) + xScaleBox.bandwidth() / 2)
+                            .attr("cy", yScaleBox(value))
+                            .attr("r", 2)
+                            .attr("fill", "red");
+                    }
+                });
+            });
+
+            // 6. Timeline Chart - Horizontal Distance to Roadways
+            const timelineWidth = 250, timelineHeight = 150;
+            const timelineSvg = d3.select("#timeline-chart")
+                .append("svg")
+                .attr("width", timelineWidth)
+                .attr("height", timelineHeight);
+            const xScaleTimeline = d3.scaleLinear()
+                .domain([0, totalSamples])
+                .range([0, timelineWidth]);
+            const yScaleTimeline = d3.scaleLinear()
+                .domain([d3.min(data, d => d.Horizontal_Distance_To_Roadways), d3.max(data, d => d.Horizontal_Distance_To_Roadways)])
+                .range([timelineHeight, 0]);
+            timelineSvg.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x((d, i) => xScaleTimeline(i))
+                    .y(d => yScaleTimeline(d.Horizontal_Distance_To_Roadways))
+                );
+        });
+    </script>
+</body>
+
+</html>
