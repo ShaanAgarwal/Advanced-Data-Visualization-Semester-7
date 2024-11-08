@@ -24,7 +24,7 @@
       <connection class='federated'>
         <named-connections>
           <named-connection caption='women_empowerment_index' name='textscan.0wo1v5p0fi8vws17fu8nh0k8y1jr'>
-            <connection class='textscan' directory='C:/Users/shaan/OneDrive/Desktop/Advanced-Data-Visualization-Experiments/EXP - 09 (Women Empowerment)' filename='women_empowerment_index.csv' password='' server='' />
+            <connection class='textscan' directory='C:/Users/shaan/OneDrive/Desktop/Advanced-Data-Visualization-Semester-7/Experiment 9' filename='women_empowerment_index.csv' password='' server='' />
           </named-connection>
         </named-connections>
         <relation connection='textscan.0wo1v5p0fi8vws17fu8nh0k8y1jr' name='women_empowerment_index.csv' table='[women_empowerment_index#csv]' type='table'>
@@ -611,8 +611,8 @@
         <devicelayout auto-generated='true' name='Phone'>
           <size maxheight='2000' minheight='2000' sizing-mode='vscroll' />
           <zones>
-            <zone h='100000' id='24' type-v2='layout-basic' w='100000' x='0' y='0'>
-              <zone h='98348' id='23' param='vert' type-v2='layout-flow' w='99094' x='453' y='826'>
+            <zone h='100000' id='26' type-v2='layout-basic' w='100000' x='0' y='0'>
+              <zone h='98348' id='25' param='vert' type-v2='layout-flow' w='99094' x='453' y='826'>
                 <zone fixed-size='280' h='49174' id='3' is-fixed='true' name='Sheet 1' w='29445' x='453' y='826'>
                   <zone-style>
                     <format attr='border-color' value='#000000' />
